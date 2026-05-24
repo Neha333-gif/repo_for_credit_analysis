@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Marketing Campaign Response Prediction</title>
+  <title>Insurance Claim Prediction</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -49,60 +49,59 @@
 <body>
   <div class="container">
     <header>
-      <p class="headline">Marketing Campaign Response Prediction</p>
-      <p class="subhead">Estimate which customers are likely to respond to your campaign using a lightweight classification model.</p>
+      <p class="headline">Insurance Claim Prediction</p>
+      <p class="subhead">Estimate claim approval likelihood using a lightweight insurance classification model.</p>
     </header>
 
     <div class="grid">
       <article class="card">
-        <div class="card-title"><span>01</span> Single Customer Prediction</div>
+        <div class="card-title"><span>01</span> Single Claim Prediction</div>
         <div class="form-grid">
           <div>
             <label for="age">Age</label>
             <input id="age" type="number" min="18" max="100" placeholder="e.g. 35" />
           </div>
           <div>
-            <label for="income">Annual Income</label>
-            <input id="income" type="number" min="0" placeholder="e.g. 65000" />
+            <label for="bmi">BMI</label>
+            <input id="bmi" type="number" min="10" max="60" step="0.1" placeholder="e.g. 28.5" />
           </div>
           <div>
-            <label for="credit_score">Credit Score</label>
-            <input id="credit_score" type="number" min="300" max="850" placeholder="e.g. 720" />
-          </div>
-          <div>
-            <label for="children">No. of Children</label>
+            <label for="children">Number of Children</label>
             <input id="children" type="number" min="0" max="10" placeholder="e.g. 2" />
+          </div>
+          <div>
+            <label for="smoker">Smoking Status</label>
+            <select id="smoker">
+              <option value="0">Non-Smoker</option>
+              <option value="1">Smoker</option>
+            </select>
           </div>
           <div>
             <label for="gender">Gender</label>
             <select id="gender">
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
+              <option value="1">Female</option>
+              <option value="0">Male</option>
             </select>
           </div>
           <div>
-            <label for="employment">Employment Status</label>
-            <select id="employment">
-              <option value="Yes">Employed</option>
-              <option value="No">Unemployed</option>
+            <label for="region">Region</label>
+            <select id="region">
+              <option value="0">Northeast</option>
+              <option value="1">Northwest</option>
+              <option value="2">Southeast</option>
+              <option value="3">Southwest</option>
             </select>
           </div>
           <div style="grid-column: span 2;">
-            <label for="marital_status">Marital Status</label>
-            <select id="marital_status">
-              <option value="Single">Single</option>
-              <option value="Married">Married</option>
-              <option value="Divorced">Divorced</option>
-              <option value="Widowed">Widowed</option>
-            </select>
+            <label for="charges">Estimated Medical Expenses</label>
+            <input id="charges" type="number" min="0" step="0.01" placeholder="e.g. 12000" />
           </div>
         </div>
 
-        <button class="button" id="predictBtn">Predict Campaign Response</button>
+        <button class="button" id="predictBtn">Predict Claim Status</button>
 
         <div class="result-box" id="singleResult" style="display:none;">
-          <div class="note">Prediction result for the current customer profile.</div>
+          <div class="note">Prediction result for the current insurance profile.</div>
           <p class="result-value" id="predictionText"></p>
           <p class="note" id="predictionProbability"></p>
         </div>
@@ -111,7 +110,7 @@
       <article class="card upload-area">
         <div class="card-title"><span>02</span> Batch CSV Prediction</div>
         <div>
-          <p class="note">Upload a CSV with these columns: <strong>gender, employed, marital_status, age, annual_income, credit_score, no_of_children</strong>.</p>
+          <p class="note">Upload a CSV with these columns: <strong>age, sex, bmi, children, smoker, region, charges</strong>.</p>
           <label class="file-label" for="csvFile">Select CSV file</label>
           <input id="csvFile" class="upload-file" type="file" accept=".csv" />
         </div>
@@ -141,12 +140,12 @@
       try {
         const payload = {
           age: Number(validateInput(document.getElementById('age').value, 'Age')),
-          annual_income: Number(validateInput(document.getElementById('income').value, 'Annual Income')),
-          credit_score: Number(validateInput(document.getElementById('credit_score').value, 'Credit Score')),
-          no_of_children: Number(validateInput(document.getElementById('children').value, 'No. of Children')),
-          gender: validateInput(document.getElementById('gender').value, 'Gender'),
-          employed: validateInput(document.getElementById('employment').value, 'Employment Status'),
-          marital_status: validateInput(document.getElementById('marital_status').value, 'Marital Status')
+          bmi: Number(validateInput(document.getElementById('bmi').value, 'BMI')),
+          children: Number(validateInput(document.getElementById('children').value, 'Number of Children')),
+          smoker: Number(validateInput(document.getElementById('smoker').value, 'Smoking Status')),
+          sex: Number(validateInput(document.getElementById('gender').value, 'Gender')),
+          region: Number(validateInput(document.getElementById('region').value, 'Region')),
+          charges: Number(validateInput(document.getElementById('charges').value, 'Estimated Medical Expenses')),
         };
 
         const response = await fetch('/predict', {
@@ -161,10 +160,10 @@
         }
 
         const data = await response.json();
-        predictionText.innerText = data.predicted_response || 'Unknown';
-        predictionProbability.innerText = data.conversion_probability !== undefined
-          ? `Conversion likelihood: ${(data.conversion_probability * 100).toFixed(1)}%`
-          : 'Conversion probability unavailable.';
+        predictionText.innerText = `Claim Status: ${data.predicted_claim_status || 'Unknown'}`;
+        predictionProbability.innerText = data.claim_approval_probability !== undefined
+          ? `Approval probability: ${(data.claim_approval_probability * 100).toFixed(1)}%`
+          : 'Approval probability unavailable.';
         singleResult.style.display = 'block';
       } catch (error) {
         singleResult.style.display = 'block';
@@ -194,7 +193,7 @@
         const blob = await response.blob();
         const downloadLink = document.createElement('a');
         downloadLink.href = URL.createObjectURL(blob);
-        downloadLink.download = 'marketing_campaign_response_prediction_results.csv';
+        downloadLink.download = 'insurance_claim_prediction_results.csv';
         document.body.appendChild(downloadLink);
         downloadLink.click();
         downloadLink.remove();
